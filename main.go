@@ -14,7 +14,7 @@
 
 package main
 
-import "do/cmd"
+import "run/cmd"
 
 func main() {
 	cmd.Execute()
