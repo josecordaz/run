@@ -35,30 +35,30 @@ var gitCmd = &cobra.Command{
 		var out bytes.Buffer
 		var stderr bytes.Buffer
 
-		comm := exec.Command("git", "add", ".")
+		// comm := exec.Command("git", "add", ".")
+		// comm.Stdout = &out
+		// comm.Stderr = &stderr
+		// err := comm.Run()
+		// if err != nil {
+		// 	fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		// 	os.Exit(1)
+		// }
+
+		// comm = exec.Command("git", "commit", "-m", args[0])
+		// comm.Stdout = &out
+		// comm.Stderr = &stderr
+		// err = comm.Run()
+		// if err != nil {
+		// 	fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		// 	os.Exit(1)
+		// }
+		// fmt.Println(out.String())
+		// out.Reset()
+
+		comm := exec.Command("git", "push")
 		comm.Stdout = &out
 		comm.Stderr = &stderr
 		err := comm.Run()
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			os.Exit(1)
-		}
-
-		comm = exec.Command("git", "commit", "-m", args[0])
-		comm.Stdout = &out
-		comm.Stderr = &stderr
-		err = comm.Run()
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			os.Exit(1)
-		}
-		fmt.Println(out.String())
-		out.Reset()
-
-		comm = exec.Command("git", "push")
-		comm.Stdout = &out
-		comm.Stderr = &stderr
-		err = comm.Run()
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 			os.Exit(1)
