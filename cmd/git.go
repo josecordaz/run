@@ -17,6 +17,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -31,29 +32,38 @@ var gitCmd = &cobra.Command{
 		git commit -m MESSAGE
 		git push`,
 	Run: func(cmd *cobra.Command, args []string) {
-		comm := exec.Command("git", "add", ".", "&&", "git", "commit", "-m", args[0], "&&", "git", "push")
-		//cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-C", "'your_email@example.com'", "-f", "/Users/josecarlosordaz/Documents/id_rsa_tmp", "-P", "\"\"")
-		// out.Run()
-		fmt.Println(comm.Args)
-		// bytes, err := cmd.Output()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-		// fmt.Println(string(bytes))
-
-		// cmd := exec.Command("find", "/", "-maxdepth", "1", "-exec", "wc", "-c", "{}", "\\")
-
 		var out bytes.Buffer
 		var stderr bytes.Buffer
+
+		comm := exec.Command("git", "add", ".")
 		comm.Stdout = &out
 		comm.Stderr = &stderr
 		err := comm.Run()
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			return
+			os.Exit(1)
 		}
-		// time.Sleep(time.Second * 5)
-		fmt.Println("Result: " + out.String())
+		fmt.Println(out.String())
+
+		comm = exec.Command("git", "commit", "-m", args[0])
+		comm.Stdout = &out
+		comm.Stderr = &stderr
+		err = comm.Run()
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			os.Exit(1)
+		}
+		fmt.Println(out.String())
+
+		comm = exec.Command("git", "push")
+		comm.Stdout = &out
+		comm.Stderr = &stderr
+		err = comm.Run()
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			os.Exit(1)
+		}
+		fmt.Println(out.String())
 	},
 }
 
