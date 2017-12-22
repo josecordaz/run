@@ -44,6 +44,7 @@ var gitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Println(out.String())
+		out.Reset()
 
 		comm = exec.Command("git", "commit", "-m", args[0])
 		comm.Stdout = &out
@@ -54,6 +55,7 @@ var gitCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Println(out.String())
+		out.Reset()
 
 		comm = exec.Command("git", "push")
 		comm.Stdout = &out
