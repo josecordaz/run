@@ -1,22 +1,22 @@
-# Install
+## Install
 
 ```shell
 make install
 ```
 
-# Delete empty and not empty folder
+## Delete empty and not empty folder
 
 ```shell
 run del FOLDER
 ```
 
-# Get folder size
+## Get folder size
 
 ```shell
 run size FOLDER
 ```
 
-# Git add, commit, push
+## Git add, commit, push
 ```shell
 run git MESSAGE
 ```
