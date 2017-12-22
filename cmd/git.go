@@ -50,7 +50,7 @@ var gitCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println(out)
+		fmt.Println(string(out))
 
 		comm := exec.Command("git", "push")
 		stderr, err := comm.StderrPipe()
