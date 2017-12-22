@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -32,8 +31,8 @@ var gitCmd = &cobra.Command{
 		git commit -m MESSAGE
 		git push`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var out bytes.Buffer
-		var stderr bytes.Buffer
+		// var out bytes.Buffer
+		// var stderr bytes.Buffer
 
 		// comm := exec.Command("git", "add", ".")
 		// comm.Stdout = &out
@@ -55,15 +54,22 @@ var gitCmd = &cobra.Command{
 		// fmt.Println(out.String())
 		// out.Reset()
 
-		comm := exec.Command("git", "push")
-		comm.Stdout = &out
-		comm.Stderr = &stderr
-		err := comm.Run()
+		out, err := exec.Command("git", "push").Output()
 		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println(out.String())
+		fmt.Println(out)
+
+		// comm := exec.Command("git", "push")
+		// comm.Stdout = &out
+		// comm.Stderr = &stderr
+		// err := comm.Run()
+		// if err != nil {
+		// 	fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		// 	os.Exit(1)
+		// }
+		// fmt.Println(out.String())
 	},
 }
 
