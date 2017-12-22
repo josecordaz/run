@@ -1,11 +1,12 @@
 BASEDIR := $(shell echo $${PWD})
 
 osx: 
-ifeq ($(UNAME_S),Darwin)
 	@go build -race -o build/run_build main.go
-endif
 
-install-osx: osx
+build:
+	@mkdir build
+
+install-osx: build osx
 	@cp $(BASEDIR)/build/run_build $(GOPATH)/bin/run
 
 install:
