@@ -16,7 +16,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"io/ioutil"
+	"log"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -54,12 +55,29 @@ var gitCmd = &cobra.Command{
 		// fmt.Println(out.String())
 		// out.Reset()
 
-		out, err := exec.Command("git", "push").Output()
+		comm := exec.Command("git", "push")
+		stderr, err := comm.StderrPipe()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
-		fmt.Println(out)
+
+		if err := comm.Start(); err != nil {
+			log.Fatal(err)
+		}
+
+		slurp, _ := ioutil.ReadAll(stderr)
+		fmt.Printf("%s\n", slurp)
+
+		if err := comm.Wait(); err != nil {
+			log.Fatal(err)
+		}
+
+		// out, err := exec.Command("git", "push").Output()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	os.Exit(1)
+		// }
+		// fmt.Println(out)
 
 		// comm := exec.Command("git", "push")
 		// comm.Stdout = &out
