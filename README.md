@@ -1,19 +1,19 @@
 # Install
 
 ```shell
-    make install
+make install
 ```
 
 # Delete empty and not empty folder
 
 ```shell
-    run del FOLDER
+run del FOLDER
 ```
 
 # Get folder size
 
 ```shell
-    run size FOLDER
+run size FOLDER
 ```
 
 More comands coming...
