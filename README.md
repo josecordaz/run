@@ -16,4 +16,9 @@ run del FOLDER
 run size FOLDER
 ```
 
+# Git add, commit, push
+```shell
+run git MESSAGE
+```
+
 More comands coming...
