@@ -21,4 +21,9 @@ run size FOLDER
 run git MESSAGE
 ```
 
+## Delete all node_modules folders recursively
+```shell
+run nm
+```
+
 More comands coming...
