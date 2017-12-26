@@ -23,7 +23,7 @@ run git MESSAGE
 
 ## Delete all node_modules folders recursively
 ```shell
-run nm
+run nm FOLDER
 ```
 
 More comands coming...
