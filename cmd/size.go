@@ -21,7 +21,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -67,11 +66,12 @@ var sizeCmd = &cobra.Command{
 					longestName = len(items[item].name)
 				}
 			}
+			condition := fmt.Sprintf("%s%d%s %s%d%s\n", "%-", longestName, "s", "%-", longestName, "s")
 			sort.Sort(BySize(items))
 			for item := range items {
 				name := items[item].name
 				size := items[item].size
-				fmt.Printf("%s %s %s\n", name, strings.Repeat(" ", longestName-len(name)), getSize(size))
+				fmt.Printf(condition, name, getSize(size))
 			}
 		} else {
 			folder := args[0]
@@ -86,20 +86,19 @@ func checkFolderSize(folder string) string {
 }
 
 func getSize(size float64) string {
-	//strconv.FormatFloat(input_num, 'f', 6, 64)
 	switch {
 	case size < 1024:
 		s := strconv.FormatFloat(size, 'f', 0, 64)
-		return fmt.Sprint(s, strings.Repeat(" ", 6-len(s)), "b")
+		return fmt.Sprintf("%-6s %s", s, "b")
 	case size < 1048576:
 		s := strconv.FormatFloat(size/1024, 'f', 2, 64)
-		return fmt.Sprint(s, strings.Repeat(" ", 6-len(s)), "K")
+		return fmt.Sprintf("%-6s %s", s, "K")
 	case size < 1073741824:
 		s := strconv.FormatFloat(size/1048576, 'f', 2, 64)
-		return fmt.Sprint(s, strings.Repeat(" ", 6-len(s)), "M")
+		return fmt.Sprintf("%-6s %s", s, "M")
 	case size < 1099511627776:
 		s := strconv.FormatFloat(size/1073741824, 'f', 2, 64)
-		return fmt.Sprint(s, strings.Repeat(" ", 6-len(s)), "G")
+		return fmt.Sprintf("%-6s %s", s, "G")
 	}
 	return "-1"
 }
