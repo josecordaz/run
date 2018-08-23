@@ -14,7 +14,7 @@
 
 package main
 
-import "run/cmd"
+import "github.com/josecordaz/run/cmd"
 
 func main() {
 	cmd.Execute()
