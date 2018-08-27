@@ -33,6 +33,16 @@ import (
 const DB = "db"
 const FILE = "file"
 
+const dbSize = `
+SELECT 
+    SUM(data_length + index_length) / 1024 / 1024 AS 'Size (MB)'
+FROM
+	information_schema.TABLES
+WHERE
+	table_schema = ?
+GROUP BY table_schema
+`
+
 // mysqlCmd represents the mysql command
 var mysqlCmd = &cobra.Command{
 	Use:   "mysql",
@@ -44,101 +54,49 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		start := time.Now()
 		host, err := cmd.Flags().GetString("databaseHost")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		checkError(err)
 		dbPass, err := cmd.Flags().GetString("databasePassword")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		checkError(err)
 		zipPass, err := cmd.Flags().GetString("filePassword")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		checkError(err)
 		folder, err := cmd.Flags().GetString("folder")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		checkError(err)
 		port, err := cmd.Flags().GetString("databasePort")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
+		checkError(err)
 
-		// 1.- leer todos los archivos en la carpeta
 		files, err := getFiles(folder)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Println(files)
+		checkError(err)
 
-		// 2.- leer todas las bases de datos deacuerdo a los parametros de entrada o default
 		dbs, err := getDBs(host, dbPass, port)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Println(dbs)
-		// 2.- volver a leer los archivos y si alguno de ellos se agrego
+		checkError(err)
+
 		doEvery(5*time.Second, func(t time.Time) {
 			files, err = getFiles(folder)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
+			checkError(err)
 			dbs, err = getDBs(host, dbPass, port)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-			// 		2.5 Entonces revisamos que tenga el nombre correspondiente
+			checkError(err)
 			if file, db := different(files, dbs); file != "" {
 				fmt.Println("There were changes!!", file)
-				//			2.7 Entonces descomprimimos el zip en una carpeta temporal
 				fmt.Println("Unzipping file...")
 				tmpFile, err := unzip(folder+"/"+file, zipPass)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "error: %v\n", err)
-					os.Exit(1)
-				}
-				fmt.Println("tmpFile", tmpFile)
-				// 2.8 Creamos la base de datos
+				checkError(err)
+
 				fmt.Println("Creating db " + db + "...")
 				err = createDB(host, port, dbPass, db)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "error: %v\n", err)
-					os.Exit(1)
-				}
+				checkError(err)
 
-				// actualizamos dbs
-				fmt.Println("Importing db " + db + "...")
 				dbs, err = getDBs(host, dbPass, port)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "error: %v\n", err)
-					os.Exit(1)
-				}
-				// 2.8 Iniciamos la importacion (tratando de mostrar un proceso) (quiza leyendo el tamaño actual de la BD)
+				checkError(err)
+
+				fmt.Println("Importing db " + db + "...")
+				start := time.Now()
 				err = importDB(&tmpFile, dbPass, host, port, db)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "error: %v\n", err)
-					os.Exit(1)
-				}
-				// 2.9 Mostramos que la bd se importo correctamente
-				fmt.Println("Imported " + db + " succesfully!")
+				checkError(err)
+
+				fmt.Printf("Imported %s successfully! Took %s\n", db, time.Since(start))
 			}
 		})
-
-		fmt.Sprintln(host)
-		fmt.Sprintln(zipPass)
-		fmt.Sprintln(folder)
-		fmt.Println("took", time.Since(start))
 	},
 }
 
@@ -242,70 +200,43 @@ func createDB(host string, port string, pass string, dbName string) error {
 
 	return nil
 }
-func importDB(tmp *os.File, pass string, host string, port string, dbName string) error {
-	// mysql -u root -p DB_NAME < PATH_FILE
-
-	// thepath, err := filepath.Abs(filepath.Dir(tmp.Name()))
-	// if err != nil {
-	// 	return err
-	// }
-
-	// cmd := "mysql -u root --password=" + pass + " --host=" + host + " --port=" + port + " " + dbName + " -e " + tmp.Name()
-
-	// exec.Command("mysql", "-u", "root", "-p{db password}", "{db name}",
-	// 	"-e", "source {file abs path}")
-
-	// c := exec.Command("mysql", "-u", "root", "--password=", pass, "--host=", host, "--port=", port, dbName, "-e", tmp.Name())
-	// c.Run()
-	// out, err := c.Output()
-	// if err != nil {
-	// 	fmt.Println(string(out))
-	// 	return err
-	// }
-	// fmt.Println(string(out))
-
-	tmp2, err := ioutil.TempFile(os.TempDir(), "tmp")
-	fmt.Println("tmpFile:=" + tmp2.Name())
-	if err != nil {
-		return err
-	}
-	str := "#!/bin/sh\n" + "mysql" + " -u " + "root" + " --password=" + pass + " -h " + host + " -P " + port + " " + dbName + " < " + tmp.Name()
-	fmt.Println("Command used := ", str)
-	tmp2.Write([]byte(str))
-	err = os.Chmod(tmp2.Name(), 0777)
-	if err != nil {
-		return err
-	}
-
-	// args := []string{"-u", "root", "--password=", pass, "--host=", host, "--port=", port, dbName, "-e", tmp.Name()}
-	// args := []string{"hi"}
+func importDB(tmp *os.File, pass string, host string, port string, dbName string) (err error) {
 	var cmdOut []byte
-	// var err error
-	if cmdOut, err = exec.Command("/bin/sh", tmp2.Name()).Output(); err != nil {
+
+	var status bool
+	go func(status *bool) {
+		var size float64
+		for {
+			if *status {
+				break
+			}
+			db, err := sql.Open("mysql", "root:"+pass+"@tcp("+host+":"+port+")/"+dbName)
+			if err != nil {
+				fmt.Println("err0", err)
+			}
+
+			row := db.QueryRow(dbSize, dbName)
+
+			err = row.Scan(&size)
+			if err != nil && err != sql.ErrNoRows {
+				fmt.Println("err1", err)
+			}
+
+			fmt.Print(fmt.Sprintf("%-.2f %s\n", size, "MB loaded"))
+
+			db.Close()
+
+			time.Sleep(20 * time.Second)
+		}
+	}(&status)
+	if cmdOut, err = exec.Command("/bin/bash", "-c", "mysql -u root --password="+pass+" -h "+host+" -P "+port+" "+dbName+" < "+tmp.Name()).Output(); err != nil {
+		status = true
 		fmt.Fprintln(os.Stderr, "There was an error running git rev-parse command: ", err)
 		return err
 	}
+	status = true
 
-	fmt.Println("cmdOut", string(cmdOut))
-
-	// c := exec.Command("/bin/sh", tmp2.Name())
-	// err := c.Run()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return err
-	// }
-	// err = c.Wait()
-	// if err != nil {
-	// 	out, err := c.Output()
-	// 	fmt.Println("2" + string(out))
-	// 	return err
-	// }
-	// out, err := c.Output()
-	// if err != nil {
-	// 	fmt.Println("3" + string(out))
-	// 	return err
-	// }
-	// fmt.Println("4" + string(out))
+	fmt.Println(string(cmdOut))
 
 	return nil
 }
@@ -386,8 +317,15 @@ func unzip(file string, passwd string) (os.File, error) {
 			return *tmp, err
 		}
 
-		fmt.Printf("Size of %v: %v byte(s)\n", tmp.Name(), len(buf))
+		fmt.Printf("Size of %v: %v MB\n", tmp.Name(), len(buf)/1024/1024)
 	}
 
 	return *tmp, nil
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
 }
