@@ -28,7 +28,7 @@ run nm FOLDER
 
 ## Import sql zip file to mysql server from a folder
 ```shell
-go run main.go mysql --databasePassword "PASSWORD" --folder ~/Desktop --filePassword "PASSWORD"
+go run main.go mysql --folder ~/Desktop --filePassword "PASSWORD"
 ```
 
 More comands...
