@@ -90,6 +90,8 @@ var mysqlCmd = &cobra.Command{
 				checkError(err)
 
 				fmt.Printf("Imported %s successfully! Took %s\n", db, time.Since(start))
+			} else {
+				fmt.Println("Listening for changes!!")
 			}
 		})
 	},
