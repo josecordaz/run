@@ -228,7 +228,6 @@ func importDB(tmp *os.File, pass string, host string, port string, dbName string
 	}(&status)
 	if cmdOut, err = exec.Command("/bin/bash", "-c", "mysql -u root --password="+pass+" -h "+host+" -P "+port+" "+dbName+" < "+tmp.Name()).Output(); err != nil {
 		status = true
-		fmt.Fprintln(os.Stderr, "There was an error running git rev-parse command: ", err)
 		return err
 	}
 	status = true
