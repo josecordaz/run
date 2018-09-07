@@ -90,6 +90,11 @@ var mysqlCmd = &cobra.Command{
 				checkError(err)
 
 				fmt.Printf("Imported %s successfully! Took %s\n", db, time.Since(start))
+
+				// Delete unziped file
+				fmt.Println("Deleting unziped file", tmpFile)
+				err = os.Remove(tmpFile.Name())
+				checkError(err)
 			} else {
 				fmt.Println("Listening for changes!!")
 			}
