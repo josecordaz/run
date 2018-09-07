@@ -89,6 +89,11 @@ var mysqlCmd = &cobra.Command{
 				err = importDB(&tmpFile, dbPass, host, port, db)
 				checkError(err)
 
+				// Delete unziped file
+				fmt.Println("Deleting unziped file", tmpFile.Name())
+				err = os.Remove(tmpFile.Name())
+				checkError(err)
+
 				fmt.Printf("Imported %s successfully! Took %s\n", db, time.Since(start))
 			} else {
 				fmt.Println("Listening for changes!!")
@@ -127,7 +132,7 @@ func formatStr(str string, tp string) string {
 	switch tp {
 	case DB:
 		{
-			re := regexp.MustCompile("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})(.sql|).zip")
+			re := regexp.MustCompile("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})")
 			return re.ReplaceAllString(str, "$1$3$5")
 		}
 	case FILE:
