@@ -156,6 +156,7 @@ func matchStr(str string, tp string) (bool, error) {
 func getDBs(host, pass, port string) (dbs map[string]string, err error) {
 	tmpDbs := make([]string, 0)
 	conn, err := sql.Open("mysql", "root:"+pass+"@tcp("+host+":"+port+")/sys")
+	defer conn.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		return dbs, err
@@ -176,6 +177,10 @@ func getDBs(host, pass, port string) (dbs map[string]string, err error) {
 		}
 		tmpDbs = append(tmpDbs, db.String)
 	}
+	rows.Close()
+	if rows.Err() != nil {
+		return dbs, rows.Err()
+	}
 	dbs, err = filterStrings(tmpDbs, DB)
 	if err != nil {
 		return dbs, err
@@ -185,6 +190,7 @@ func getDBs(host, pass, port string) (dbs map[string]string, err error) {
 
 func createDB(host string, port string, pass string, dbName string) error {
 	db, err := sql.Open("mysql", "root:"+pass+"@tcp("+host+":"+port+")/")
+	defer db.Close()
 	if err != nil {
 		return err
 	}
