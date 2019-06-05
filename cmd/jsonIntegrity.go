@@ -19,7 +19,6 @@ import (
 	"bufio"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -29,19 +28,9 @@ import (
 // jsonIntegrityCmd represents the jsonIntegrity command
 var jsonIntegrityCmd = &cobra.Command{
 	Use:   "jsonIntegrity",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Validate json structure",
+	Long:  `This takes a zip folder with json.gz files and validate every line in those files has a correct json structure`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Add command to run project - DONE
-		// Add code to read files from zip file
-		// Add code to iterate over each file
-		// Add code to validate each file
 
 		r, err := zip.OpenReader("/Users/joseordaz/Desktop/pipeline.zip")
 		if err != nil {
@@ -84,8 +73,6 @@ to quickly create a Cobra application.`,
 
 			}
 		}
-
-		fmt.Println("jsonIntegrity called")
 	},
 }
 
