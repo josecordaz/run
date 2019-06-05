@@ -32,7 +32,7 @@ var jsonIntegrityCmd = &cobra.Command{
 	Long:  `This takes a zip folder with json.gz files and validate every line in those files has a correct json structure`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		r, err := zip.OpenReader("/Users/joseordaz/Desktop/pipeline.zip")
+		r, err := zip.OpenReader(args[0])
 		if err != nil {
 			panic(err)
 		}
