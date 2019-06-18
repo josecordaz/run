@@ -19,6 +19,7 @@ import (
 	"bufio"
 	"compress/gzip"
 	"encoding/json"
+	"regexp"
 
 	"github.com/spf13/cobra"
 
@@ -39,6 +40,8 @@ var jsonIntegrityCmd = &cobra.Command{
 		defer r.Close()
 
 		var obj map[string]interface{}
+
+		re := regexp.MustCompile(`0001-01-01T00:00:00\.000000Z\+00:00`)
 
 		for _, f := range r.File {
 			if f.Name != "export.json" {
@@ -63,6 +66,10 @@ var jsonIntegrityCmd = &cobra.Command{
 				for scanner.Scan() {
 					line++
 					str := scanner.Text()
+
+					if re.Match([]byte(str)) {
+						log.Warnf("IT SEEM DATE IS WRONG, LINE(%d), CONTENT => %s \n", line, str)
+					}
 
 					err = json.Unmarshal([]byte(str), &obj)
 					if err != nil {
