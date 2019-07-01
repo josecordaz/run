@@ -20,6 +20,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -43,8 +44,11 @@ var jsonIntegrityCmd = &cobra.Command{
 
 		re := regexp.MustCompile(`0001-01-01T00:00:00\.000000Z\+00:00`)
 
+		reGPG := regexp.MustCompile(`"gpg_signed":true`)
+
 		for _, f := range r.File {
-			if f.Name != "export.json" {
+			var fullContentFile string
+			if f.Name != "export.json" && strings.Contains(f.Name, ".json") {
 
 				log.Infof("Validating file => %s", f.Name)
 
@@ -61,11 +65,15 @@ var jsonIntegrityCmd = &cobra.Command{
 				defer gz.Close()
 
 				scanner := bufio.NewScanner(gz)
+				buf := make([]byte, 0, 64*1024)
+				scanner.Buffer(buf, 1024*1024)
 
 				line := 0
 				for scanner.Scan() {
 					line++
 					str := scanner.Text()
+
+					fullContentFile += str
 
 					if re.Match([]byte(str)) {
 						log.Warnf("IT SEEM DATE IS WRONG, LINE(%d), CONTENT => %s \n", line, str)
@@ -78,6 +86,16 @@ var jsonIntegrityCmd = &cobra.Command{
 					}
 				}
 
+				err = scanner.Err()
+				if err != nil {
+					log.Error(err)
+				}
+
+				if strings.Contains(f.Name, "commit.json.gz") {
+					if !reGPG.Match([]byte(fullContentFile)) {
+						log.Warnf("THIS FILE DOES NOT CONTAIN ANY SIGNED COMMITS, THIS MIGHT BE WRONG \n")
+					}
+				}
 			}
 		}
 	},
