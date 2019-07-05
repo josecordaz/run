@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/spf13/cobra"
 
@@ -40,64 +41,71 @@ var jsonIntegrityCmd = &cobra.Command{
 		}
 		defer r.Close()
 
-		var obj map[string]interface{}
-
 		re := regexp.MustCompile(`0001-01-01T00:00:00\.000000Z\+00:00`)
 
 		reGPG := regexp.MustCompile(`"gpg_signed":true`)
 
+		var wg sync.WaitGroup
+
+		wg.Add(len(r.File))
+
 		for _, f := range r.File {
-			var fullContentFile string
-			if f.Name != "export.json" && strings.Contains(f.Name, ".json") {
+			go func(f *zip.File) {
+				defer wg.Done()
+				var obj map[string]interface{}
+				var fullContentFile string
+				if f.Name != "export.json" && strings.Contains(f.Name, ".json") {
 
-				log.Infof("Validating file => %s", f.Name)
+					log.Infof("Validating file => %s", f.Name)
 
-				rc, err := f.Open()
-				if err != nil {
-					panic(err)
-				}
-				defer rc.Close()
+					rc, err := f.Open()
+					if err != nil {
+						panic(err)
+					}
+					defer rc.Close()
 
-				gz, err := gzip.NewReader(rc)
-				if err != nil {
-					panic(err)
-				}
-				defer gz.Close()
+					gz, err := gzip.NewReader(rc)
+					if err != nil {
+						panic(err)
+					}
+					defer gz.Close()
 
-				scanner := bufio.NewScanner(gz)
-				buf := make([]byte, 0, 64*1024)
-				scanner.Buffer(buf, 1024*1024)
+					scanner := bufio.NewScanner(gz)
+					buf := make([]byte, 0, 64*1024)
+					scanner.Buffer(buf, 1024*1024)
+					line := 0
+					for scanner.Scan() {
+						line++
+						str := scanner.Text()
 
-				line := 0
-				for scanner.Scan() {
-					line++
-					str := scanner.Text()
+						fullContentFile += str
 
-					fullContentFile += str
+						if re.Match([]byte(str)) {
+							log.Warnf("IT SEEM DATE IS WRONG, LINE(%d), CONTENT => %s, FILE => %s \n", line, str, f.Name)
+						}
 
-					if re.Match([]byte(str)) {
-						log.Warnf("IT SEEM DATE IS WRONG, LINE(%d), CONTENT => %s \n", line, str)
+						err = json.Unmarshal([]byte(str), &obj)
+						if err != nil {
+							log.Warnf("WRONG JSON FORMAT IN LINE(%d) CONTENT => %s, FILE => %s \n", line, str, f.Name)
+							log.Error(err)
+						}
 					}
 
-					err = json.Unmarshal([]byte(str), &obj)
+					err = scanner.Err()
 					if err != nil {
-						log.Warnf("WRONG JSON FORMAT IN LINE(%d) CONTENT => %s \n", line, str)
 						log.Error(err)
 					}
-				}
 
-				err = scanner.Err()
-				if err != nil {
-					log.Error(err)
-				}
-
-				if strings.Contains(f.Name, "commit.json.gz") {
-					if !reGPG.Match([]byte(fullContentFile)) {
-						log.Warnf("THIS FILE DOES NOT CONTAIN ANY SIGNED COMMITS, THIS MIGHT BE WRONG \n")
+					if strings.Contains(f.Name, "commit.json.gz") {
+						if !reGPG.Match([]byte(fullContentFile)) {
+							log.Warnf("THIS FILE DOES NOT CONTAIN ANY SIGNED COMMITS, THIS MIGHT BE WRONG, FILE => %s\n", f.Name)
+						}
 					}
 				}
-			}
+			}(f)
 		}
+
+		wg.Wait()
 	},
 }
 
