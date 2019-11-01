@@ -25,16 +25,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Item struct {
+type item struct {
 	name string
 	size float64
 }
 
-type BySize []Item
+type bySize []item
 
-func (a BySize) Len() int           { return len(a) }
-func (a BySize) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a BySize) Less(i, j int) bool { return a[i].size > a[j].size }
+func (a bySize) Len() int           { return len(a) }
+func (a bySize) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a bySize) Less(i, j int) bool { return a[i].size > a[j].size }
 
 // sizeCmd represents the size command
 var sizeCmd = &cobra.Command{
@@ -43,7 +43,7 @@ var sizeCmd = &cobra.Command{
 	Long:  `Checks folder size resursively`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			items := make([]Item, 0)
+			items := make([]item, 0)
 			dir, err := os.Getwd()
 			if err != nil {
 				log.Fatal(err)
@@ -55,9 +55,9 @@ var sizeCmd = &cobra.Command{
 			}
 			for _, file := range files {
 				if file.IsDir() {
-					items = append(items, Item{file.Name(), getFolderSize(dir + "/" + file.Name())})
+					items = append(items, item{file.Name(), getFolderSize(dir + "/" + file.Name())})
 				} else {
-					items = append(items, Item{file.Name(), float64(file.Size())})
+					items = append(items, item{file.Name(), float64(file.Size())})
 				}
 			}
 			longestName := len(items[0].name)
@@ -67,7 +67,7 @@ var sizeCmd = &cobra.Command{
 				}
 			}
 			condition := fmt.Sprintf("%s%d%s %s%d%s\n", "%-", longestName, "s", "%-", longestName, "s")
-			sort.Sort(BySize(items))
+			sort.Sort(bySize(items))
 			for item := range items {
 				name := items[item].name
 				size := items[item].size
