@@ -33,7 +33,5 @@ jobs:
         version: latest
         args: release
         key: ${{ secrets.YOUR_PRIVATE_KEY }}
-        signs:
-          - artifacts: checksum
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
