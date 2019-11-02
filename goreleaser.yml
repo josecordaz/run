@@ -1,3 +1,0 @@
-# goreleaser.yml
-signs:
-  - artifacts: checksum
