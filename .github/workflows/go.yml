@@ -30,6 +30,7 @@ jobs:
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v1
       with:
+        version: latest
         key: ${{ secrets.YOUR_PRIVATE_KEY }}
         args: --config goreleaser.yml
       env:
