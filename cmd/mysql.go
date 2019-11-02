@@ -26,12 +26,13 @@ import (
 
 	"github.com/yeka/zip"
 
+	// calling mysql init
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 )
 
-const DB = "db"
-const FILE = "file"
+const db = "db"
+const file = "file"
 
 const dbSize = `
 SELECT 
@@ -130,12 +131,12 @@ func filterStrings(names []string, tp string) (filtered map[string]string, err e
 
 func formatStr(str string, tp string) string {
 	switch tp {
-	case DB:
+	case db:
 		{
 			re := regexp.MustCompile("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})")
 			return re.ReplaceAllString(str, "$1$3$5")
 		}
-	case FILE:
+	case file:
 		{
 			re := regexp.MustCompile("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})(.sql|).zip")
 			return re.ReplaceAllString(str, "$1$3$5")
@@ -146,11 +147,11 @@ func formatStr(str string, tp string) string {
 
 func matchStr(str string, tp string) (bool, error) {
 	switch tp {
-	case DB:
+	case db:
 		{
 			return regexp.MatchString("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})", str)
 		}
-	case FILE:
+	case file:
 		{
 			return regexp.MatchString("(bs|ss)(_|)(\\d{4})(\\d{2}|)(\\d{2})(.sql|).zip", str)
 		}
@@ -186,7 +187,7 @@ func getDBs(host, pass, port string) (dbs map[string]string, err error) {
 	if rows.Err() != nil {
 		return dbs, rows.Err()
 	}
-	dbs, err = filterStrings(tmpDbs, DB)
+	dbs, err = filterStrings(tmpDbs, db)
 	if err != nil {
 		return dbs, err
 	}
@@ -258,7 +259,7 @@ func getFiles(folder string) (files map[string]string, err error) {
 		return files, err
 	}
 
-	files, err = filterStrings(tmpFiles, FILE)
+	files, err = filterStrings(tmpFiles, file)
 	if err != nil {
 		return files, err
 	}
