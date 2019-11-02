@@ -32,7 +32,7 @@ jobs:
       with:
         version: latest
         args: release
+        signs:
+          - artifacts: checksum
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      signs:
-        - artifacts: checksum
