@@ -30,6 +30,6 @@ jobs:
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v1
       with:
-        args: --config .goreleaser.yml
+        args: --config goreleaser.yml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
