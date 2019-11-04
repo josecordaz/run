@@ -1,0 +1,6 @@
+projectKey=run_go
+serverUrl=http://localhost:9000
+serverVersion=6.7.7.38951
+dashboardUrl=http://localhost:9000/dashboard/index/run_go
+ceTaskId=AW42s4bdqwQjjy6Xovg0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AW42s4bdqwQjjy6Xovg0
