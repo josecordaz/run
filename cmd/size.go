@@ -88,19 +88,20 @@ func checkFolderSize(folder string) string {
 func getSize(size float64) string {
 	switch {
 	case size < 1024:
-		s := strconv.FormatFloat(size, 'f', 0, 64)
-		return fmt.Sprintf("%-6s %s", s, "b")
+		return formatFloat(size, 'b')
 	case size < 1048576:
-		s := strconv.FormatFloat(size/1024, 'f', 2, 64)
-		return fmt.Sprintf("%-6s %s", s, "K")
+		return formatFloat(size/1024, 'K')
 	case size < 1073741824:
-		s := strconv.FormatFloat(size/1048576, 'f', 2, 64)
-		return fmt.Sprintf("%-6s %s", s, "M")
+		return formatFloat(size/1048576, 'M')
 	case size < 1099511627776:
-		s := strconv.FormatFloat(size/1073741824, 'f', 2, 64)
-		return fmt.Sprintf("%-6s %s", s, "G")
+		return formatFloat(size/1073741824, 'G')
 	}
 	return "-1"
+}
+
+func formatFloat(size float64, unit rune) string {
+	s := strconv.FormatFloat(size, 'f', 0, 64)
+	return fmt.Sprintf("%-6s %s", s, string(unit))
 }
 
 func getFolderSize(folder string) float64 {
