@@ -33,4 +33,9 @@ run nm FOLDER
 run mysql --folder ~/Desktop --filePassword "PASSWORD"
 ```
 
+## Copy file from datamodel dist to project
+```shell
+run datamodel PROJECT FILE
+```
+
 More comands...
