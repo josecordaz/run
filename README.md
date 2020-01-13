@@ -38,4 +38,14 @@ run mysql --folder ~/Desktop --filePassword "PASSWORD"
 run datamodel PROJECT FILE
 ```
 
+## Get apps datamodel version
+```shell
+run datamodel-status
+```
+
+## Show dependency version
+```shell
+run toml DEPENDENCY
+```
+
 More comands...

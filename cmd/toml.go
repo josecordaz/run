@@ -52,7 +52,7 @@ to quickly create a Cobra application.`,
 
 		bts, err := ioutil.ReadFile(file.Name())
 
-		re := regexp.MustCompile(`(?m)` + dependency + `"\n  version = "(\d+.\d+.\d+)`)
+		re := regexp.MustCompile(`(?m)` + dependency + `"\n  version = "(.*)"`)
 
 		text := string(bts)
 		if re.Match([]byte(text)) {
