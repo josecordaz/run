@@ -16,6 +16,7 @@ var datamodelCmd = &cobra.Command{
 	Use:   "datamodel",
 	Short: "move files easier",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		projectDest := "agent"
 		fileDest := "*"
 
