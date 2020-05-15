@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/pinpt/go-common/fileutil"
 	pstrings "github.com/pinpt/go-common/strings"
@@ -21,19 +22,25 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		projectDest := "agent.next/"
-		file := "*"
-		fileDest := ""
+		projectDest := "agent"
+		fileDest := "*"
+
+		// datamodel work // defaults agent
+		// datamodel pipeline work
+		// datamodel work/issues.go // defaults agent
+		// datamodel pipeline work/issues.go
 
 		// 0 := project
 		// 1 := filepath
 		switch len(args) {
 		case 2:
-			file = args[1]
-			fileDest = file
-			fallthrough
-		case 1:
+			fileDest := args[1]
+			if !strings.Contains(fileDest, ".go") {
+				fileDest += pstrings.JoinURL("/", "*")
+			}
 			projectDest = args[0]
+		case 1:
+			fileDest = args[0]
 		}
 
 		GoPath := os.Getenv("GOPATH")
@@ -44,14 +51,14 @@ to quickly create a Cobra application.`,
 		baseDir := pstrings.JoinURL(GoPath, "/src/github.com/pinpt/")
 		baseSrc := pstrings.JoinURL(baseDir, "datamodel/dist/golang/public/")
 
-		finalSrc := "/" + pstrings.JoinURL(baseSrc, file)
+		finalSrc := "/" + pstrings.JoinURL(baseSrc, fileDest)
 		finalDest := "/" + pstrings.JoinURL(baseDir, projectDest, "vendor/github.com/pinpt/integration-sdk/", fileDest)
 
 		if exists := fileutil.FileExists(finalSrc); !exists {
 			log.Error("Does not exits path := ", finalSrc)
 		}
 		if exists := fileutil.FileExists(finalDest); !exists {
-			log.Error("Does not exits path := ", finalSrc)
+			log.Error("Does not exits path := ", finalDest)
 		}
 
 		c := exec.Command("cp", "-v", "-R", finalSrc, finalDest)
