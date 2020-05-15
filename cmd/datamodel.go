@@ -60,6 +60,7 @@ var datamodelCmd = &cobra.Command{
 		if err != nil {
 			log.Error(err)
 		}
+
 		log.Info(string(bts))
 	},
 }
