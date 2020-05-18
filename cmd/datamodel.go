@@ -18,7 +18,7 @@ var datamodelCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		projectDest := "agent"
-		fileDest := "*"
+		var itemDestination string
 
 		// datamodel work // defaults agent
 		// datamodel pipeline work
@@ -29,25 +29,22 @@ var datamodelCmd = &cobra.Command{
 		// 1 := filepath
 		switch len(args) {
 		case 2:
-			fileDest := args[1]
-			if !strings.Contains(fileDest, ".go") {
-				fileDest += pstrings.JoinURL("/", "*")
-			}
+			itemDestination = args[1]
 			projectDest = args[0]
 		case 1:
-			fileDest = args[0]
+			itemDestination = args[0]
 		}
 
-		GoPath := os.Getenv("GOPATH")
-		if GoPath == "" {
+		goPath := os.Getenv("GOPATH")
+		if goPath == "" {
 			log.Error("$GOPATH env not defined")
 		}
 
-		baseDir := pstrings.JoinURL(GoPath, "/src/github.com/pinpt/")
-		baseSrc := pstrings.JoinURL(baseDir, "datamodel/dist/golang/public/")
+		goPinpointPath := pstrings.JoinURL(goPath, "/src/github.com/pinpt/")
+		sourceFolder := pstrings.JoinURL(goPinpointPath, "datamodel/dist/golang/public/")
 
-		finalSrc := "/" + pstrings.JoinURL(baseSrc, fileDest)
-		finalDest := "/" + pstrings.JoinURL(baseDir, projectDest, "vendor/github.com/pinpt/integration-sdk/", fileDest)
+		finalSrc := "/" + pstrings.JoinURL(sourceFolder, itemDestination)
+		finalDest := "/" + pstrings.JoinURL(goPinpointPath, projectDest, "vendor/github.com/pinpt/integration-sdk/", itemDestination)
 
 		if exists := fileutil.FileExists(finalSrc); !exists {
 			log.Error("Does not exits path := ", finalSrc)
@@ -56,7 +53,11 @@ var datamodelCmd = &cobra.Command{
 			log.Error("Does not exits path := ", finalDest)
 		}
 
-		c := exec.Command("cp", "-v", "-R", finalSrc, finalDest)
+		if !strings.Contains(itemDestination, ".go") {
+			finalSrc += "/*"
+		}
+
+		c := exec.Command("sh", "-c", "cp -v -R "+finalSrc+" "+finalDest)
 		bts, err := c.Output()
 		if err != nil {
 			log.Error(err)
