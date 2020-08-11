@@ -108,7 +108,7 @@ func getFolderSize(folder string) float64 {
 	files, err := ioutil.ReadDir(folder)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		return -1
 	}
 	var size float64
 	for _, file := range files {
